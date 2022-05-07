@@ -1,5 +1,9 @@
 # try NEW SQLs
 
+SQL92より後の新しいSQLの勉強
+
+- WITH, WITH RECURSIVE
+- OVER (Window Functions)
 
 ## 元ネタ
 
