@@ -1,4 +1,4 @@
-# try NEW SQLs
+# Study NEW SQLs
 
 SQL92より後の新しいSQLの勉強
 
