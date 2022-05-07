@@ -20,7 +20,7 @@ INSERT INTO Folders (id, name, parent_id) VALUES
   (6, 'People', 4),
   (7, 'Travel', 4),
   (8, 'Foods', 4),
-  (5, 'Videos', 2),
+  (5, 'Videos', 2)
 ;
 
 
