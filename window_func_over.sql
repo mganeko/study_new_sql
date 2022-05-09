@@ -39,7 +39,6 @@ SELECT account_id, SUM(value)
   GROUPING SET account_id;
 --*/
 
-/* --- ROLL UP ---*/
 SELECT account_id, SUM(value) 
  FROM Bank_Transaction
  GROUP BY account_id WITH ROLLUP;
@@ -165,3 +164,46 @@ SELECT report_date, patients, AVG(patients) OVER (
  ) moving_avg
  FROM Covid19;
 
+
+/* ---------------
+for PostgreSQL 
+---------- */
+
+
+SELECT account_id, SUM(value) 
+ FROM Bank_Transaction
+ GROUP BY account_id WITH ROLLUP;
+-- ERROR: syntax error at or near "WITH" (line: 365)
+
+SELECT account_id, SUM(value) 
+ FROM Bank_Transaction
+ GROUP BY account_id GROUPING SETS(account_id);
+-- ERROR
+
+-- OK --
+SELECT account_id, SUM(value) 
+ FROM Bank_Transaction
+ GROUP BY GROUPING SETS(account_id);
+
+-- OK --
+SELECT account_id, SUM(value) 
+ FROM Bank_Transaction
+ GROUP BY GROUPING SETS((), account_id);
+
+-- OK --
+SELECT account_id, SUM(value) 
+ FROM Bank_Transaction
+ GROUP BY GROUPING SETS(account_id, ());
+
+
+
+-- average -- 
+-- OK --
+SELECT AVG(patients) FROM Covid19;
+
+-- moving average --
+-- OK --
+SELECT report_date, patients, AVG(patients) OVER (
+   ORDER BY report_date ROWS BETWEEN 3 PRECEDING AND 3 FOLLOWING
+ ) moving_avg
+ FROM Covid19;
