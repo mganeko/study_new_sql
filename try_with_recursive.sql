@@ -275,3 +275,89 @@ WITH RECURSIVE Fld(id, name, path,  parent_id, lvl) AS (
     AND Fld.lvl < 10 -- レベル制限
 ) 
 SELECT * FROM Fld;
+
+
+/* ---- for PostgreSQL ------*/
+
+-- NG on PosgreSQL --
+WITH RECURSIVE Fld(id, name, path,  parent_id, lvl) AS ( 
+  -- 最初のクエリー --
+  SELECT id, name, name, parent_id, 1 FROM Folders
+    WHERE name = 'Media'
+
+  UNION ALL
+
+  -- 再帰的なクエリー --
+  SELECT Folders.id, Folders.name, CONCAT(Fld.path, '/', Folders.name), Folders.parent_id, Fld.lvl + 1 
+    FROM Folders LEFT JOIN Fld ON  Folders.parent_id = Fld.id
+    WHERE Fld.lvl < 10 -- レベル制限
+) 
+SELECT * FROM Fld;
+-- ERROR: recursive reference to query "fld" must not appear within an outer join (line: 258)
+
+-- NG on PosgreSQL --
+WITH RECURSIVE Fld(id, name, path,  parent_id, lvl) AS ( 
+  -- 最初のクエリー --
+  SELECT id, name, name, parent_id, 1 FROM Folders
+    WHERE name = 'Media'
+
+  UNION ALL
+
+  -- 再帰的なクエリー --
+  SELECT Folders.id, Folders.name, CONCAT(Fld.path, '/', Folders.name), Folders.parent_id, Fld.lvl + 1 
+    FROM Folders, Fld
+     WHERE Folders.parent_id = Fld.id
+      AND Fld.lvl < 10 -- レベル制限
+) 
+SELECT * FROM Fld;
+-- ERROR: recursive query "fld" column 3 has type character varying(50) in non-recursive term but type character varying overall (line: 267)
+
+
+
+-- OK --
+WITH RECURSIVE Fld(id, name, parent_id, lvl) AS ( 
+  -- 最初のクエリー --
+  SELECT id, name, parent_id, 1 FROM Folders
+    WHERE name = 'Media'
+
+  UNION ALL
+
+  -- 再帰的なクエリー --
+  SELECT Folders.id, Folders.name, Folders.parent_id, Fld.lvl + 1 
+    FROM Folders, Fld
+     WHERE Folders.parent_id = Fld.id
+      AND Fld.lvl < 10 -- レベル制限
+) 
+SELECT * FROM Fld;
+
+-- OK --
+WITH RECURSIVE Fld(id, name, parent_id, lvl) AS ( 
+  -- 最初のクエリー --
+  SELECT id, name, parent_id, 1 FROM Folders
+    WHERE name = 'Media'
+
+  UNION ALL
+
+  -- 再帰的なクエリー --
+  SELECT Folders.id, Folders.name, Folders.parent_id, Fld.lvl + 1 
+    FROM Folders INNER JOIN Fld ON  Folders.parent_id = Fld.id
+    WHERE Fld.lvl < 10 -- レベル制限
+) 
+SELECT * FROM Fld;
+
+-- OK --
+WITH RECURSIVE Fld(id, name, path, parent_id, lvl) AS ( 
+  -- 最初のクエリー --
+  SELECT id, name, name, parent_id, 1 FROM Folders
+    WHERE name = 'Media'
+
+  UNION ALL
+
+  -- 再帰的なクエリー --
+  SELECT Folders.id, Folders.name, 
+     CAST(CONCAT(Fld.path, '/', Folders.name) AS CHARACTER VARYING(50)), 
+     Folders.parent_id, Fld.lvl + 1 
+    FROM Folders INNER JOIN Fld ON  Folders.parent_id = Fld.id
+    WHERE Fld.lvl < 10 -- レベル制限
+) 
+SELECT * FROM Fld;
