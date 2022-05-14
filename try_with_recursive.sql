@@ -361,3 +361,20 @@ WITH RECURSIVE Fld(id, name, path, parent_id, lvl) AS (
     WHERE Fld.lvl < 10 -- レベル制限
 ) 
 SELECT * FROM Fld;
+
+
+-- OK レベル制限なし --
+WITH RECURSIVE Fld(id, name, path, parent_id, lvl) AS ( 
+  -- 最初のクエリー --
+  SELECT id, name, name, parent_id, 1 FROM Folders
+    WHERE name = 'Media'
+
+  UNION ALL
+
+  -- 再帰的なクエリー --
+  SELECT Folders.id, Folders.name, 
+     CAST(CONCAT(Fld.path, '/', Folders.name) AS CHARACTER VARYING(50)), 
+     Folders.parent_id, Fld.lvl + 1 
+    FROM Folders INNER JOIN Fld ON  Folders.parent_id = Fld.id
+) 
+SELECT * FROM Fld;
