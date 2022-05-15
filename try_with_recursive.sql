@@ -277,6 +277,22 @@ WITH RECURSIVE Fld(id, name, path,  parent_id, lvl) AS (
 SELECT * FROM Fld;
 
 
+-- OK レベル制限なし --
+WITH RECURSIVE Fld(id, name, path, parent_id, lvl) AS ( 
+  -- 最初のクエリー --
+  SELECT id, name, name, parent_id, 1 FROM Folders WHERE name = 'Media'
+
+  UNION ALL
+
+  -- 再帰的なクエリー --
+  SELECT Folders.id, Folders.name, 
+     CONCAT(Fld.path, '/', Folders.name), 
+     Folders.parent_id, Fld.lvl + 1 
+    FROM Folders INNER JOIN Fld ON  Folders.parent_id = Fld.id
+) 
+SELECT * FROM Fld;
+
+
 /* ---- for PostgreSQL ------*/
 
 -- NG on PosgreSQL --
