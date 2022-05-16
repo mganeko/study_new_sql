@@ -108,8 +108,6 @@ SELECT * FROM media_view;
 -- 移動する --
 -- Mediaのparent_idを変更するだけ
 
--- 削除する --
-
 /* -- コピーする -- */
 
 -- ID を 100増やす --
@@ -169,3 +167,41 @@ WITH RECURSIVE Fld(id, name, path, parent_id, lvl) AS (
     FROM Folders INNER JOIN Fld ON  Folders.parent_id = Fld.id
 )
 SELECT * FROM Fld;
+
+
+-- 削除候補 --
+WITH RECURSIVE Fld(id, name, path, parent_id, lvl) AS ( 
+  -- 最初のクエリー --
+  SELECT id, name, name, parent_id, 1 FROM Folders
+    WHERE name = 'Media_copy'
+
+  UNION ALL
+
+  -- 再帰的なクエリー --
+  SELECT Folders.id, Folders.name, 
+     CAST(CONCAT(Fld.path, '/', Folders.name) AS CHARACTER VARYING(50)), 
+     Folders.parent_id, Fld.lvl + 1 
+    FROM Folders INNER JOIN Fld ON  Folders.parent_id = Fld.id
+)
+SELECT * FROM Folders WHERE id IN (
+ SELECT id FROM Fld
+);
+
+
+-- 子供も含めて削除 --
+WITH RECURSIVE Fld(id, name, path, parent_id, lvl) AS ( 
+  -- 最初のクエリー --
+  SELECT id, name, name, parent_id, 1 FROM Folders
+    WHERE name = 'Media_copy'
+
+  UNION ALL
+
+  -- 再帰的なクエリー --
+  SELECT Folders.id, Folders.name, 
+     CAST(CONCAT(Fld.path, '/', Folders.name) AS CHARACTER VARYING(50)), 
+     Folders.parent_id, Fld.lvl + 1 
+    FROM Folders INNER JOIN Fld ON  Folders.parent_id = Fld.id
+)
+DELETE FROM Folders WHERE id IN (
+ SELECT id FROM Fld
+);
